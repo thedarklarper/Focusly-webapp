@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { GameState, Duck } from "@/game/types";
 import { loadGameState, saveGameState, syncGameState, loadSignedInGameState, ensureProfile } from "@/services/storage";
 import { getSession, onAuthStateChange } from "@/lib/supabase";
@@ -33,6 +33,26 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (ready) saveGameState(state);
   }, [state, ready]);
+
+  // Auto-sync: push any pending progress to the signed-in cloud account (debounced).
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const syncingRef = useRef(false);
+  useEffect(() => {
+    if (!ready) return;
+    if (!state.sync.userId) return;
+    if (state.outbox.length === 0) return;
+    const t = setTimeout(() => {
+      if (syncingRef.current) return;
+      syncingRef.current = true;
+      syncGameState(stateRef.current)
+        .then(setState)
+        .finally(() => {
+          syncingRef.current = false;
+        });
+    }, 900);
+    return () => clearTimeout(t);
+  }, [ready, state.sync.userId, state.outbox.length]);
 
   useEffect(() => {
     const auth = onAuthStateChange(async (_event, session) => {

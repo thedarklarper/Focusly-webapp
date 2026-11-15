@@ -60,6 +60,19 @@ Row Level Security must allow `auth.uid() = user_id` (or `= id` for `profiles`);
 add `http://localhost:3000` and your Vercel domain to the Site URL / Redirect URLs
 (needed for email confirmation and password reset links on the web).
 
+### Google sign-in
+
+The Profile screen has a **Continue with Google** button (Supabase OAuth). To enable it:
+
+1. Supabase Dashboard → **Authentication → Providers → Google** → enable.
+2. Create an OAuth Client in [Google Cloud Console](https://console.cloud.google.com/apis/credentials):
+   - Authorized redirect URI: `https://<your-project>.supabase.co/auth/v1/callback`
+3. Paste the Google **Client ID** and **Client Secret** into the Supabase Google provider.
+4. Add `http://localhost:3000` and your Vercel URL to Supabase **Redirect URLs**.
+
+After signing in, progress auto-syncs to that account (debounced push of pending
+changes). The timer only settles rewards when it reaches 0:00; cancelling gives none.
+
 ## Deploy to Vercel
 
 1. Push this repo to GitHub (see below).

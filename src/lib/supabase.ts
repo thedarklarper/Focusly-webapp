@@ -14,6 +14,13 @@ export const getSupabase = () =>
 export const getSession = () => getSupabase().auth.getSession();
 export const signIn = (email: string, password: string) => getSupabase().auth.signInWithPassword({ email, password });
 export const signUp = (email: string, password: string) => getSupabase().auth.signUp({ email, password });
+export const signInWithGoogle = () =>
+  getSupabase().auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+    },
+  });
 export const resetPassword = (email: string) =>
   getSupabase().auth.resetPasswordForEmail(email, typeof window !== "undefined" ? { redirectTo: window.location.origin } : undefined);
 export const signOut = () => getSupabase().auth.signOut();

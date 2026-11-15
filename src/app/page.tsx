@@ -16,17 +16,28 @@ export default function HomePage() {
   const active = state.ownedDucks.find((o) => o.isActive) || state.ownedDucks[0];
   const ad = duck(active?.duckId || "prototype");
 
-  useEffect(() => {
-    if (!running) return;
-    const t = setInterval(() => setSeconds((x) => x + 1), 1000);
-    return () => clearInterval(t);
-  }, [running]);
+  const start = () => {
+    setSeconds(minutes * 60);
+    setRunning(true);
+  };
 
-  const finish = () => {
+  const cancel = () => {
     setRunning(false);
     setSeconds(0);
-    focus(minutes);
   };
+
+  // Real countdown: tick down one second at a time and only settle rewards at 0:00.
+  useEffect(() => {
+    if (!running) return;
+    if (seconds <= 0) {
+      setRunning(false);
+      focus(minutes);
+      return;
+    }
+    const t = setTimeout(() => setSeconds((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [running, seconds]);
 
   const mmss = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 
@@ -101,8 +112,8 @@ export default function HomePage() {
               ))}
             </div>
             <p className="mb-3 text-center text-[44px] font-black tabular-nums text-[#16253D]">{mmss}</p>
-            <Button title={running ? "Finish & claim rewards" : `Start ${minutes}-minute focus`} onClick={running ? finish : () => setRunning(true)} />
-            <p className="mt-2 text-[11px] text-[#718096]">Simulated focus — the browser cannot block apps. Completing 60+ minutes grants bonus Breadcrumbs &amp; a Hatching Credit.</p>
+            <Button title={running ? "Cancel focus" : `Start ${minutes}-minute focus`} onClick={running ? cancel : start} secondary={running} />
+            <p className="mt-2 text-[11px] text-[#718096]">The timer must run to 0:00 to claim rewards — cancelling gives none. Completing 60+ minutes grants bonus Breadcrumbs &amp; a Hatching Credit.</p>
           </Card>
 
           <Card>
