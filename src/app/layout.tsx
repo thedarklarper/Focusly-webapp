@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import { GameProvider } from "@/providers/GameProvider";
-import { BottomNav } from "@/components/BottomNav";
+import { LoginGate } from "@/components/LoginGate";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
@@ -25,10 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${geistSans.variable} h-full`}>
       <body className="min-h-dvh bg-cream font-sans text-navy">
         <GameProvider>
-          <div className="relative mx-auto flex min-h-dvh w-full max-w-[480px] flex-col bg-cream shadow-[0_0_60px_rgba(22,37,61,0.08)]">
-            <main className="flex-1 pb-24">{children}</main>
-            <BottomNav />
-          </div>
+          <LoginGate>{children}</LoginGate>
         </GameProvider>
       </body>
     </html>

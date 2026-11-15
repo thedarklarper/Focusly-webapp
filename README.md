@@ -41,20 +41,34 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<publishable/anon key>
 Use **only** the public project URL and the publishable/anon key. Never put the
 Postgres connection string or a `service_role`/secret key in the browser.
 
-## Supabase
+## Accounts
 
-This app talks directly to Supabase from the browser. It does **not** create or
-alter any tables. It reads/writes these existing tables:
+Sign-in happens at app entry with **local accounts** (no cloud, no cost):
 
-- `profiles` (id, username, breadcrumbs, hatching_credits, trophies, screen_time_minutes, stamina, active_duck_id)
-- `ducks` (catalog — read only)
-- `user_ducks` (id, user_id, duck_id, level, xp, energy, is_active, is_asleep)
-- `focus_sessions` (id, user_id, duration_minutes, breadcrumbs_earned, hatching_credits_earned, screen_time_minutes_earned, completed)
-- `battles` (id, user_id, user_duck_id, opponent_duck_id, result, trophies_earned, breadcrumbs_earned, screen_time_minutes_earned)
-- `transactions` (id, user_id, type, breadcrumbs_change, hatching_credits_change, screen_time_minutes_change, trophies_change, description)
+| Name  | Password |
+|-------|----------|
+| chris | 123456   |
+| steve | 123456   |
+| user  | 123456   |
 
-Row Level Security must allow `auth.uid() = user_id` (or `= id` for `profiles`);
-`ducks` should be readable by signed-in users.
+Each account keeps its **own progress in this browser's localStorage**. Clearing
+browser data (or a different device) starts fresh. `Phase-2`: swap
+`src/services/accounts.ts` + the local save in `src/services/storage.ts` for
+Supabase/other backend when you want real cross-device accounts.
+
+## Supabase (optional / phase 2)
+
+> Supabase auth + cloud sync is **disabled** in this build because the project
+> key in `.env.local` was rejected (`Invalid API key`). The app is fully playable
+> on local accounts without it. See git history before this change for the
+> Supabase integration if you later fix the key and want cloud sync.
+
+## App structure
+
+- `src/components/LoginGate.tsx` — the sign-in screen shown before the app.
+- `src/services/accounts.ts` — the three local accounts + session.
+- `src/services/storage.ts` — per-account localStorage save/load.
+- `src/providers/GameProvider.tsx` — game state + sign-in/out.
 
 **Auth redirects:** in Supabase Dashboard → Authentication → URL Configuration,
 add `http://localhost:3000` and your Vercel domain to the Site URL / Redirect URLs

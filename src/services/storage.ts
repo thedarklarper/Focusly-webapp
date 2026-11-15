@@ -3,29 +3,30 @@ import { starterState } from "@/game/engine";
 import { getSupabase } from "@/lib/supabase";
 import { DUCKS, getDuck } from "@/data/ducks";
 
-const KEY = "focusly:game:v1";
+const KEY_PREFIX = "focusly:game:v1";
+const keyFor = (userId?: string) => (userId ? `${KEY_PREFIX}:${userId}` : KEY_PREFIX);
 const profileColumns = "id,username,breadcrumbs,hatching_credits,trophies,screen_time_minutes,stamina,active_duck_id";
 
-const readRaw = (): string | null => {
+const readRaw = (userId?: string): string | null => {
   if (typeof window === "undefined") return null;
   try {
-    return window.localStorage.getItem(KEY);
+    return window.localStorage.getItem(keyFor(userId));
   } catch {
     return null;
   }
 };
-const writeRaw = (value: string) => {
+const writeRaw = (value: string, userId?: string) => {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(KEY, value);
+    window.localStorage.setItem(keyFor(userId), value);
   } catch {
     /* ignore quota / privacy mode errors */
   }
 };
 
-export async function loadGameState(): Promise<GameState> {
+export async function loadGameState(userId?: string): Promise<GameState> {
   try {
-    const raw = readRaw();
+    const raw = readRaw(userId);
     if (!raw) return starterState();
     const saved = JSON.parse(raw) as Partial<GameState>;
     const initial = starterState();
@@ -41,8 +42,8 @@ export async function loadGameState(): Promise<GameState> {
   }
 }
 
-export async function saveGameState(state: GameState) {
-  writeRaw(JSON.stringify(state));
+export async function saveGameState(state: GameState, userId?: string) {
+  writeRaw(JSON.stringify(state), userId);
 }
 
 export async function loadSignedInGameState(local: GameState): Promise<GameState> {
