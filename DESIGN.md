@@ -78,6 +78,20 @@ Sprites live in `public/ducks/*.png` and render through `DuckArt`. Do not redraw
 recolor them with CSS filters. Give each one a flat colored plate behind it
 (`rounded-[18px]`, marigold or skyblue) instead of a shadow or outline.
 
+## Known contrast failures (measured, not guessed)
+
+Checked with `.cline/skills/antislop-human/contrast-check.py`. Fix these when touching the
+relevant screen; do not ship new text on top of them.
+
+- Muted `#718096` on cream `#FFF9EF` is 3.83:1 and on white is 4.02:1, both under the 4.5:1
+  small-text floor. It is used for eyebrows, section labels, and captions, which are
+  uppercase 11px, so they are small text and they fail. Use `#5C6B7F` instead (5.19:1 on
+  cream, 5.43:1 on white) or keep `#718096` only at 18px+ or bold 15px+.
+- Cream `#FFF9EF` on pond green `#62B58A` is 2.36:1. Never put cream text on a green meter
+  fill or green button. Navy on green is the pairing to use.
+- These pass and should not be second-guessed: navy on marigold 9.77:1, navy on skyblue
+  10.02:1, navy on coral 5.90:1.
+
 ## What Focusly is not
 
 Not dark mode by default. Not a landing page. Not a marketing site. No hero section, no
