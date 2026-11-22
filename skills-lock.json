@@ -1,0 +1,161 @@
+{
+  "version": 2,
+  "skills": {
+    "phaser-analyze": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-analyze/SKILL.md",
+      "computedHash": "bf340682f1c9e90fa81daf77e718c471b698a31e890891aebe81eae65cce1a29"
+    },
+    "phaser-animation": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-animation/SKILL.md",
+      "computedHash": "328cafff1bebc00df29c48e83d0d65d780612a987f5be1e452e02665f839ecc0"
+    },
+    "phaser-architect": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-architect/SKILL.md",
+      "computedHash": "382d21d948800d6d42eb636673065ede7058bd113320bedd6de65a2a9c6b803b"
+    },
+    "phaser-asset-advisor": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-asset-advisor/SKILL.md",
+      "computedHash": "6e7e190107d98d2745489bc5eab35262a7c107b8b08fdb2f3b41638879c207c4"
+    },
+    "phaser-audio": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-audio/SKILL.md",
+      "computedHash": "edbed77ed998856d7028cecd5e078fad308d14091b57755bb2d92c5b033b6e0d"
+    },
+    "phaser-brainstorm": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-brainstorm/SKILL.md",
+      "computedHash": "46271f44a61152e16bab7df7e4c0dab5d77e59f198b59c3c1f507f8f1902df98"
+    },
+    "phaser-build": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-build/SKILL.md",
+      "computedHash": "3e90c72fe4824a7f4d32b27b4f30a6c5eb5c42697605d5d976dd97b528c8ca18"
+    },
+    "phaser-coder": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-coder/SKILL.md",
+      "computedHash": "cc07c9be631bab3f1d6970ec69cf5831835c3d84e81a42968a12592f239f1f81"
+    },
+    "phaser-debugger": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-debugger/SKILL.md",
+      "computedHash": "290ecb184b1b8f204d7fcc7e82219d2bbf9e4b4562db6b11b973934ba1aa6860"
+    },
+    "phaser-feedback": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-feedback/SKILL.md",
+      "computedHash": "a456b1700bbe973203a078673b07177f557504bd400ae46fade63712c417ffc8"
+    },
+    "phaser-fx": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-fx/SKILL.md",
+      "computedHash": "d8dc74076a7f6e18dd54c18dbbebbd51578ee18afcf5e401c597e3709f18b43d"
+    },
+    "phaser-gameobj": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-gameobj/SKILL.md",
+      "computedHash": "848f222f72a088f16f086d19f59a3e1787a015fc72fc26bcce9fb61d6772cc37"
+    },
+    "phaser-gdd": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-gdd/SKILL.md",
+      "computedHash": "d29ca7d93283d71ff8e7bfbd281b28b53c5a47fb8abb589953ea651e004b3f25"
+    },
+    "phaser-init": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-init/SKILL.md",
+      "computedHash": "61ab1812fabb31e6aa69b50c188cb76a91d3c952fc99a57c03669f6b61493fc8"
+    },
+    "phaser-input": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-input/SKILL.md",
+      "computedHash": "b070064c6b354134e938f934cfc47ff30e9d613f9828b99171cd065495c9f36c"
+    },
+    "phaser-matter": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-matter/SKILL.md",
+      "computedHash": "046bafefd342069080071d15edc5ee360a1f01e237523faaaaab0adb57d1da44"
+    },
+    "phaser-migrate": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-migrate/SKILL.md",
+      "computedHash": "f0ed1630a07c0da2ee865f077fb0efdd9c22e6036cce307cfce01a54bb74f964"
+    },
+    "phaser-mobile": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-mobile/SKILL.md",
+      "computedHash": "be5e948ae3737e3961e39664933c8994792d9641480fcdbec655f873d342b9d2"
+    },
+    "phaser-particles": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-particles/SKILL.md",
+      "computedHash": "927ad5c999e0b9edfb24633e7ed8b51b3eb25ec2478a2c0a44e37d3d7dc0fdaa"
+    },
+    "phaser-physics": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-physics/SKILL.md",
+      "computedHash": "20e37556cfc83c0ba4bc342aedfc0cd6451218b14c01d122a3d47287dafaf0fb"
+    },
+    "phaser-playtest": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-playtest/SKILL.md",
+      "computedHash": "e14fa72ef59ba7c5064645a373ff845a068631229d7f1ddbe079ca0c208cb173"
+    },
+    "phaser-release": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-release/SKILL.md",
+      "computedHash": "d5b5ed4445887347efa6479dd66efe176c7dbd71204ebd6195fd20965eb75fea"
+    },
+    "phaser-saveload": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-saveload/SKILL.md",
+      "computedHash": "03ece001090141081cb8fcac3dc6af2605acf27da3a5de903b7628182fe28e28"
+    },
+    "phaser-scene": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-scene/SKILL.md",
+      "computedHash": "b413e86aa160760ccefe6e40b3ab5f5565d4d1eb829ac06903bac1cc834add07"
+    },
+    "phaser-tilemap": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-tilemap/SKILL.md",
+      "computedHash": "c91b457f1a72e1659ab489633158fe96566ecac5512d3a0a17cbb7715a11702c"
+    },
+    "phaser-ui": {
+      "source": "Yakoub-ai/phaser4-gamedev",
+      "sourceType": "github",
+      "skillPath": "skills/phaser-ui/SKILL.md",
+      "computedHash": "c9993e27d7e8ab18155647743242229d4110f87d4d384d70b355ead65660c150"
+    }
+  }
+}
