@@ -2,18 +2,16 @@
 
 import { memo, useEffect, useState } from "react";
 import { useGame, duck, DUCKS } from "@/providers/GameProvider";
-import { fightAction, startBattle, statsFor, settleFight } from "@/game/engine";
+import { startBattle, statsFor, settleFight } from "@/game/engine";
 import { DuckOffCanvas, type DuckOffCanvasProps } from "@/components/duckoff/DuckOffCanvas";
 import { ControlDeck } from "@/components/duckoff/ControlDeck";
-import { Button, Card, Header, Meter, Pill, Shell } from "@/components/ui";
+import { Button, Card, Header, Pill, Shell } from "@/components/ui";
 import { DuckArt } from "@/components/DuckArt";
-import { BattleAction, OwnedDuck } from "@/game/types";
+import { OwnedDuck } from "@/game/types";
 import { DIFFICULTY_LABEL, type Difficulty, type FighterSetup, type FightOutcome } from "@/game/duckoff/types";
 import type { InputBus } from "@/game/duckoff/input";
 
-const MODE_LABELS = { classic: "Classic", brawl: "Street Brawl" } as const;
-
-/** Trophies-based tier labels reuse the exact strings the classic battle prints. */
+/** Trophies-based tier labels reuse the exact strings the battle results print. */
 const trophiesToDifficulty = (trophies: number): Difficulty => (trophies >= 150 ? "hard" : trophies >= 75 ? "medium" : "easy");
 
 const DupSetup = memo(function DupSetup({
@@ -22,12 +20,14 @@ const DupSetup = memo(function DupSetup({
   canStart,
   onStart,
   activeName,
+  title,
 }: {
   opponentId: string;
   setOpponentId: (id: string) => void;
   canStart: boolean;
   onStart: () => void;
   activeName?: string;
+  title: string;
 }) {
   return (
     <Card>
@@ -49,33 +49,49 @@ const DupSetup = memo(function DupSetup({
         ))}
       </div>
       <div className="mt-4">
-        <Button title={canStart ? "Enter the arena (20 stamina)" : "Need stamina / rested duck"} onClick={onStart} disabled={!canStart} />
+        <Button title={canStart ? title : "Need stamina / rested duck"} onClick={onStart} disabled={!canStart} />
       </div>
     </Card>
   );
 });
 
 export default function DuckOffPage() {
-  const { state, action, ready } = useGame();
+  const { state, action, ready, account } = useGame();
   const active = state.ownedDucks.find((o) => o.isActive) || state.ownedDucks[0];
-  const b = state.battle;
 
   const [opponentId, setOpponentId] = useState<string>(DUCKS.find((d) => d.id !== active?.duckId)?.id || "pirate");
-  const [mode, setMode] = useState<"classic" | "brawl">("classic");
   const [brawlState, setBrawlState] = useState<"idle" | "fighting" | "done">("idle");
   const [brawlOutcome, setBrawlOutcome] = useState<FightOutcome | null>(null);
   const [inputBus, setInputBus] = useState<InputBus | null>(null);
 
-  const canStart = state.profile.stamina >= 20 && !!active && !active.isAsleep && active.energy > 0;
+  // dev test account
+  const isDevAccount = account?.id === "chris";
+
+  const canStart = (isDevAccount || state.profile.stamina >= 20) && !!active && !active.isAsleep && active.energy > 0;
   const activeName = active ? duck(active.duckId).name : undefined;
   const difficulty = trophiesToDifficulty(state.profile.trophies);
 
-  const startClassic = () => action((s) => startBattle(s, opponentId));
-  const act = (a: BattleAction) => action((s) => fightAction(s, a));
+  // dev test account: keep stamina and breadcrumbs topped up so the wallet
+  // never depletes (engine guards and displays then behave as infinite).
+  useEffect(() => {
+    if (!isDevAccount) return;
+    if (state.profile.stamina < 1000 || state.profile.breadcrumbs < 1000) {
+      action((s) => ({
+        ...s,
+        profile: {
+          ...s.profile,
+          stamina: Math.max(s.profile.stamina, 9999),
+          breadcrumbs: Math.max(s.profile.breadcrumbs, 9999),
+        },
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDevAccount, state.profile.stamina, state.profile.breadcrumbs]);
 
   const startBrawl = () => {
     if (!canStart || brawlState === "fighting") return;
-    action((s) => startBattle(s, opponentId)); // rings the stamina ledger
+    // dev test account: startBattle guards on stamina >= 20 — force it open.
+    action((s) => startBattle(isDevAccount ? { ...s, profile: { ...s.profile, stamina: Math.max(s.profile.stamina, 9999) } } : s, opponentId));
     setBrawlOutcome(null);
     setBrawlState("fighting");
   };
@@ -87,20 +103,17 @@ export default function DuckOffPage() {
     action((s) => settleFight(s, { playerDuckId: active.duckId, opponentDuckId: opponentId, outcome }));
   };
 
-  // Dev/testing hook: /duck-off?brawl=1&autostart=1 boots Street Brawl straight
-  // away so the headless playtest harness can probe the Phaser game at page
-  // load. Stamina/duck checks still apply; nothing is bypassed.
+  // Headless playtest hook: /duck-off?autostart=1 boots the brawl straight
+  // away at page load. Stamina/duck checks still apply; nothing is bypassed.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("brawl") !== "1") return;
-    setMode((m) => (m === "classic" ? "brawl" : m));
-    if (params.get("autostart") === "1" && ready && canStart && brawlState === "idle") startBrawl();
+    if (new URLSearchParams(window.location.search).get("autostart") !== "1") return;
+    if (ready && canStart && brawlState === "idle") startBrawl();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, canStart, brawlState]);
 
   const brawlMatch: DuckOffCanvasProps["match"] | null =
-    active && mode === "brawl" && brawlState === "fighting"
+    active && brawlState === "fighting"
       ? {
           player: setupFor(active, duck(active.duckId)),
           opponent: setupFor({ level: 1, xp: 0 } as OwnedDuck, duck(opponentId)),
@@ -116,164 +129,51 @@ export default function DuckOffPage() {
       <Card className="flex items-center justify-between bg-[#9ED9F4]">
         <div>
           <Pill color="#FFFFFF">STAMINA</Pill>
-          <p className="mt-1 text-[28px] font-black leading-none text-[#16253D]">{state.profile.stamina}</p>
+          <p className="mt-1 text-[28px] font-black leading-none text-[#16253D]">
+            {isDevAccount ? "∞ TEST MODE" : state.profile.stamina}
+          </p>
           <p className="text-[12px] text-[#16253D]/70">A battle costs 20 stamina.</p>
         </div>
         <span className="text-4xl">⚡</span>
       </Card>
 
-      {/* Mode switch */}
-      <div
-        className="mb-3.5 flex gap-1 rounded-full bg-[#EEF0ED] p-1 text-[12px] font-black"
-        role="tablist"
-        aria-label="Battle mode"
-      >
-        {(["classic", "brawl"] as const).map((m) => (
-          <button
-            key={m}
-            role="tab"
-            aria-selected={mode === m}
-            onClick={() => {
-              setMode(m);
-              setBrawlState("idle");
-              setBrawlOutcome(null);
-            }}
-            className={`flex-1 rounded-full py-[10px] transition-colors ${mode === m ? "bg-[#16253D] text-[#FFF9EF]" : "bg-transparent text-[#718096]"}`}
-          >
-            {MODE_LABELS[m]}
-          </button>
-        ))}
-      </div>
-
-      {/* Classic branch (unchanged behavior) */}
-      {mode === "classic" && (!b || b.finished) ? (
-        <>
-          {b?.finished ? (
-            <Card className="bg-[#16253D]">
-              <p className="text-[28px] font-black text-[#F8C84A]">{b.result === "win" ? "Victory!" : "Good try!"}</p>
-              <p className="mt-1 text-[13px] text-white/80">
-                {b.result === "win" ? "+75 Breadcrumbs · +12 trophies · +15 min" : "+20 Breadcrumbs · +2 trophies · +5 min"}
-              </p>
-            </Card>
-          ) : null}
-          <DupSetup opponentId={opponentId} setOpponentId={setOpponentId} canStart={canStart} onStart={startClassic} activeName={activeName} />
-        </>
+      {brawlState === "done" && brawlOutcome ? (
+        <Card className="bg-[#16253D]">
+          <p className="text-[28px] font-black text-[#F8C84A]">{brawlOutcome.result === "win" ? "Victory!" : "Good try!"}</p>
+          <p className="mt-1 text-[13px] text-white/80">
+            {brawlOutcome.result === "win" ? "+75 Breadcrumbs · +12 trophies · +15 min" : "+20 Breadcrumbs · +2 trophies · +5 min"}
+            {" · Round wins "} {brawlOutcome.rounds[0]}-{brawlOutcome.rounds[1]}
+          </p>
+          <p className="mt-1 text-[12px] text-white/60">Player HP {brawlOutcome.playerHp}/{brawlOutcome.playerMaxHp} · Difficulty {DIFFICULTY_LABEL[difficulty]}.</p>
+        </Card>
       ) : null}
 
-      {mode === "brawl" ? (
-        <>
-          {brawlState === "done" && brawlOutcome ? (
-            <Card className="bg-[#16253D]">
-              <p className="text-[28px] font-black text-[#F8C84A]">{brawlOutcome.result === "win" ? "Victory!" : "Good try!"}</p>
-              <p className="mt-1 text-[13px] text-white/80">
-                {brawlOutcome.result === "win" ? "+75 Breadcrumbs · +12 trophies · +15 min" : "+20 Breadcrumbs · +2 trophies · +5 min"}
-                {" · Round wins "} {brawlOutcome.rounds[0]}-{brawlOutcome.rounds[1]}
-              </p>
-              <p className="mt-1 text-[12px] text-white/60">Player HP {brawlOutcome.playerHp}/{brawlOutcome.playerMaxHp} · Difficulty {DIFFICULTY_LABEL[difficulty]}.</p>
-            </Card>
-          ) : null}
-
-          {brawlState === "idle" || brawlState === "done" ? (
-            <DupSetup opponentId={opponentId} setOpponentId={setOpponentId} canStart={canStart} onStart={startBrawl} activeName={activeName} />
-          ) : null}
-
-          {brawlState === "fighting" && brawlMatch ? (
-            <>
-              <DuckOffCanvas
-                match={brawlMatch}
-                playerSprite={duck(active.duckId).sprite}
-                opponentSprite={duck(opponentId).sprite}
-                onFinish={finishBrawl}
-                onInputBus={setInputBus}
-              />
-              <div className="mt-3 rounded-[12px] bg-[#FFF9EF] p-2.5">
-                <ControlDeck input={inputBus} enabled specialReady={!!inputBus && inputBus.current.special} />
-              </div>
-              <p className="mt-2 text-[11px] font-bold text-[#718096]">
-                Hold to fight · Special spends 100 meter · Difficulty {DIFFICULTY_LABEL[difficulty]} · Rematch drains 20 stamina.
-              </p>
-            </>
-          ) : null}
-        </>
+      {brawlState === "idle" || brawlState === "done" ? (
+        <DupSetup
+          opponentId={opponentId}
+          setOpponentId={setOpponentId}
+          canStart={canStart}
+          onStart={startBrawl}
+          activeName={activeName}
+          title={isDevAccount ? "Enter the arena" : "Enter the arena (20 stamina)"}
+        />
       ) : null}
 
-      {/* Unchanged classic battle arena*/}
-      {mode === "classic" && b && !b.finished ? (
+      {brawlState === "fighting" && brawlMatch ? (
         <>
-          <Card className="bg-[#16253D]">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex-1">
-                <p className="text-[12px] font-black text-white">{duck(b.player).name}</p>
-                <div className="mt-1">
-                  <Meter value={(b.playerHp / b.playerMaxHp) * 100} color="#62B58A" />
-                </div>
-              </div>
-              <span className="text-[11px] font-black text-white/60">VS</span>
-              <div className="flex-1 text-right">
-                <p className="text-[12px] font-black text-white">{duck(b.opponent).name}</p>
-                <div className="mt-1">
-                  <Meter value={(b.opponentHp / b.opponentMaxHp) * 100} color="#F2815A" />
-                </div>
-              </div>
-            </div>
-
-            <div className="relative mt-3 h-[230px] overflow-hidden rounded-[18px] border-b-[6px] border-[#1F2B3C] bg-[#34455C]">
-              <div className="absolute bottom-6" style={{ left: `${(b.opponentX / 320) * 100}%` }}>
-                <DuckArt id={b.opponent} size={72} flip />
-              </div>
-              <div className="absolute bottom-6" style={{ left: `${(b.playerX / 320) * 100}%` }}>
-                <DuckArt id={b.player} size={72} />
-              </div>
-              <p className="absolute bottom-2 w-full text-center text-[11px] font-extrabold text-[#DDE5F0]">
-                {Math.abs(b.playerX - b.opponentX) <= 132 ? "In range — strike now!" : "Close the distance to hit."}
-              </p>
-            </div>
-
-            <p className="mt-2 text-[11px] font-bold text-[#DDE5F0]">
-              Energy {b.playerEnergy} · Cooldown {b.cooldown} · {b.difficulty} tier
-            </p>
-          </Card>
-
-          <Card>
-            <p className="text-[11px] font-black uppercase tracking-[1.6px] text-[#718096]">Battle log</p>
-            <ul className="mt-1 space-y-0.5">
-              {b.log.slice(-5).map((l, i) => (
-                <li key={i} className="text-[12px] text-[#16253D]">
-                  • {l}
-                </li>
-              ))}
-            </ul>
-          </Card>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex flex-col gap-2">
-              <button onClick={() => act("left")} className="rounded-[12px] bg-white py-3 text-[13px] font-black text-[#16253D] shadow active:scale-[0.98]">
-                ◀ Left
-              </button>
-              <button onClick={() => act("right")} className="rounded-[12px] bg-white py-3 text-[13px] font-black text-[#16253D] shadow active:scale-[0.98]">
-                Right ▶
-              </button>
-              <div className="flex gap-2">
-                <button onClick={() => act("jump")} className="flex-1 rounded-[12px] bg-white py-3 text-[12px] font-black text-[#16253D] shadow active:scale-[0.98]">
-                  Jump
-                </button>
-                <button onClick={() => act("block")} className="flex-1 rounded-[12px] bg-white py-3 text-[12px] font-black text-[#16253D] shadow active:scale-[0.98]">
-                  Block
-                </button>
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <button onClick={() => act("punch")} className="rounded-[12px] bg-[#9ED9F4] py-3 text-[13px] font-black text-[#16253D] shadow active:scale-[0.98]">
-                Punch
-              </button>
-              <button onClick={() => act("kick")} className="rounded-[12px] bg-[#9ED9F4] py-3 text-[13px] font-black text-[#16253D] shadow active:scale-[0.98]">
-                Kick
-              </button>
-              <button onClick={() => act("special")} className="rounded-[12px] bg-[#F8C84A] py-3 text-[13px] font-black text-[#16253D] shadow active:scale-[0.98]">
-                Special ✦
-              </button>
-            </div>
+          <DuckOffCanvas
+            match={brawlMatch}
+            playerSprite={duck(active.duckId).sprite}
+            opponentSprite={duck(opponentId).sprite}
+            onFinish={finishBrawl}
+            onInputBus={setInputBus}
+          />
+          <div className="mt-3 rounded-[12px] bg-[#FFF9EF] p-2.5">
+            <ControlDeck input={inputBus} enabled specialReady={!!inputBus && inputBus.current.special} />
           </div>
+          <p className="mt-2 text-[11px] font-bold text-[#718096]">
+            Hold to fight · Special spends 100 meter · Difficulty {DIFFICULTY_LABEL[difficulty]} · Rematch drains 20 stamina.
+          </p>
         </>
       ) : null}
     </Shell>
@@ -294,3 +194,4 @@ function setupFor(owned: OwnedDuck, d: ReturnType<typeof duck>): FighterSetup {
     },
   };
 }
+
