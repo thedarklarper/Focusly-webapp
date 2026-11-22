@@ -61,6 +61,23 @@ const fight = await page.evaluate(() => {
 console.log("canvas:", canvas ? "found" : "MISSING");
 console.log("game:", game ? JSON.stringify(game) : "MISSING");
 console.log("chris test mode (infinite stamina):", staminaShown);
+
+// Background music: must be PAUSED during duck-off, PLAYING on other pages.
+const duckOffAudio = await page.evaluate(() => {
+  const a = document.querySelector("audio");
+  return a ? { found: true, paused: a.paused, src: a.getAttribute("src") } : { found: false };
+});
+
+await page.goto(`${base}/`, { waitUntil: "load" });
+await page.mouse.click(200, 400); // user gesture unlocks audio playback
+await page.waitForTimeout(1200);
+const homeAudio = await page.evaluate(() => {
+  const a = document.querySelector("audio");
+  return a ? { found: true, paused: a.paused, currentTime: a.currentTime } : { found: false };
+});
+
+console.log("music on /duck-off (should be paused):", JSON.stringify(duckOffAudio));
+console.log("music on / home (should be playing):", JSON.stringify(homeAudio));
 console.log("after combat:", fight ? JSON.stringify(fight) : "MISSING");
 console.log("errors:", errors.length ? errors.slice(0, 5) : "none");
 await page.screenshot({ path: ".playtest/verify-loggedin.png" });

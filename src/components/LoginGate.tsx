@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useGame } from "@/providers/GameProvider";
 import { LOCAL_ACCOUNTS, LOCAL_PASSWORD } from "@/services/accounts";
+import { BackgroundMusic } from "@/components/BackgroundMusic";
 import { BottomNav } from "@/components/BottomNav";
 import { DuckArt } from "@/components/DuckArt";
 import { Button, Card } from "@/components/ui";
@@ -25,6 +26,7 @@ export function LoginGate({ children }: { children: React.ReactNode }) {
   if (account) {
     return (
       <div className="relative mx-auto flex min-h-dvh w-full max-w-[480px] flex-col bg-cream shadow-[0_0_60px_rgba(22,37,61,0.08)]">
+        <BackgroundMusic />
         <main className="flex-1 pb-24">{children}</main>
         <BottomNav />
       </div>
