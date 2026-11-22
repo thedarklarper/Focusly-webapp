@@ -9,6 +9,8 @@ import { drawArena } from "./Arena";
 const FIGHTER_H = 150;
 const MAX_STEPS = 3;
 const STEP_MS = 1000 / 60;
+/** The duck PNGs face LEFT natively. Flip this constant if art ever changes. */
+const SPRITES_FACE_RIGHT = false;
 
 /**
  * Renders the simulation from `match.ts`. The scene never owns game rules: it
@@ -31,6 +33,8 @@ export class FightScene extends Phaser.Scene {
   private opponentNativeH = 1;
   private lastRoundSeen = 0;
   private lastRoundWinner: "player" | "opponent" | "draw" | null = null;
+  private playerTag!: Phaser.GameObjects.Text;
+  private opponentTag!: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: "FightScene" });
@@ -59,6 +63,18 @@ export class FightScene extends Phaser.Scene {
 
     this.playerSprite = this.add.image(this.match.state.player.x, this.match.state.player.y, "duck-player").setOrigin(0.5, 1).setDepth(3);
     this.opponentSprite = this.add.image(this.match.state.opponent.x, this.match.state.opponent.y, "duck-opponent").setOrigin(0.5, 1).setDepth(3);
+
+    const tagStyle = (bg: string): Phaser.Types.GameObjects.Text.TextStyle =>
+      ({
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        fontSize: "11px",
+        fontStyle: "bold",
+        color: "#FFF9EF",
+        backgroundColor: bg,
+        padding: { x: 6, y: 3 },
+      });
+    this.playerTag = this.add.text(this.match.state.player.x, this.match.state.player.y, "YOU", tagStyle("#62B58A")).setOrigin(0.5, 1).setDepth(6);
+    this.opponentTag = this.add.text(this.match.state.opponent.x, this.match.state.opponent.y, "AI", tagStyle("#F2815A")).setOrigin(0.5, 1).setDepth(6);
 
     this.showBanner(`ROUND ${this.match.state.round}`, "FIGHT!");
     this.lastRoundSeen = this.match.state.round;
@@ -109,8 +125,14 @@ export class FightScene extends Phaser.Scene {
     this.playerShadow.setPosition(player.x, Math.max(player.y, this.match.state.player.y) + 2);
     this.opponentShadow.setPosition(opponent.x, Math.max(opponent.y, this.match.state.opponent.y) + 2);
 
-    this.playerSprite.setFlipX(player.facing === -1);
-    this.opponentSprite.setFlipX(opponent.facing === -1);
+    this.playerSprite.setFlipX(SPRITES_FACE_RIGHT ? player.facing === -1 : player.facing === 1);
+    this.opponentSprite.setFlipX(SPRITES_FACE_RIGHT ? opponent.facing === -1 : opponent.facing === 1);
+
+    // Gamertag chips float just above each fighter's head (origin 0.5,1 so the
+    // tag's bottom edge sits at the anchor; sprite.y is feet + pose offset).
+    const tagY = (sprite: Phaser.GameObjects.Image) => sprite.y - FIGHTER_H * sprite.scaleY - 10;
+    this.playerTag.setPosition(this.playerSprite.x, tagY(this.playerSprite));
+    this.opponentTag.setPosition(this.opponentSprite.x, tagY(this.opponentSprite));
 
     this.poseFighter(this.playerSprite, this.playerShadow, player, this.playerNativeH);
     this.poseFighter(this.opponentSprite, this.opponentShadow, opponent, this.opponentNativeH);
