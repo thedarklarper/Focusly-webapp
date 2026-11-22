@@ -58,9 +58,21 @@ const fight = await page.evaluate(() => {
   };
 });
 
+// Fight music: the brawl track must be PLAYING during the fight, the site
+// loop PAUSED. Audio elements are found by their src.
+await page.waitForTimeout(1500); // give the brawl audio a moment to start
+const musicDuring = await page.evaluate(() =>
+  [...document.querySelectorAll("audio")].map((a) => ({
+    src: a.getAttribute("src"),
+    paused: a.paused,
+    t: Math.round(a.currentTime * 10) / 10,
+  }))
+);
+
 console.log("canvas:", canvas ? "found" : "MISSING");
 console.log("game:", game ? JSON.stringify(game) : "MISSING");
 console.log("chris test mode (infinite stamina):", staminaShown);
+console.log("music during brawl:", JSON.stringify(musicDuring));
 
 // Background music: must be PAUSED during duck-off, PLAYING on other pages.
 const duckOffAudio = await page.evaluate(() => {

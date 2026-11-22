@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useGame, duck, DUCKS } from "@/providers/GameProvider";
 import { startBattle, statsFor, settleFight } from "@/game/engine";
 import { DuckOffCanvas, type DuckOffCanvasProps } from "@/components/duckoff/DuckOffCanvas";
@@ -61,6 +61,25 @@ export function DuckOffPage() {
 
   const [opponentId, setOpponentId] = useState<string>(DUCKS.find((d) => d.id !== active?.duckId)?.id || "pirate");
   const [brawlState, setBrawlState] = useState<"idle" | "fighting" | "done">("idle");
+  const brawlAudioRef = useRef<HTMLAudioElement>(null);
+
+  // Fight music: plays ONLY while a Street Brawl is actually running. The
+  // "Enter the arena" tap is the user gesture that unlocks playback on iOS;
+  // a first-pointerdown retry covers any race with the gesture window.
+  useEffect(() => {
+    const a = brawlAudioRef.current;
+    if (!a) return;
+    if (brawlState === "fighting") {
+      a.volume = 0.4;
+      const tryPlay = () => a.play().catch(() => {});
+      tryPlay();
+      const unlock = () => tryPlay();
+      window.addEventListener("pointerdown", unlock, { once: true });
+      return () => window.removeEventListener("pointerdown", unlock);
+    }
+    a.pause();
+    a.currentTime = 0;
+  }, [brawlState]);
   const [brawlOutcome, setBrawlOutcome] = useState<FightOutcome | null>(null);
   const [inputBus, setInputBus] = useState<InputBus | null>(null);
 
@@ -161,6 +180,8 @@ export function DuckOffPage() {
 
       {brawlState === "fighting" && brawlMatch ? (
         <>
+          {/* Fight track — plays only while the brawl runs; the site loop is paused. */}
+          <audio ref={brawlAudioRef} src="/audio/duck-off-brawl.mp3" loop preload="auto" aria-hidden="true" />
           <DuckOffCanvas
             match={brawlMatch}
             playerSprite={duck(active.duckId).sprite}
