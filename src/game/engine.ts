@@ -214,6 +214,10 @@ export const settleFight = (s: GameState, brawl: { playerDuckId: string; opponen
   const opponentName = getDuck(brawl.opponentDuckId).name;
   return {
     ...s,
+    // Mark the shared battle slot finished, exactly like settleBattle does, so
+    // startBattle's "battle in progress" guard lifts and the next brawl can
+    // charge its 20 stamina again.
+    battle: s.battle ? { ...s.battle, finished: true, result: win ? ("win" as const) : ("loss" as const) } : s.battle,
     profile: {
       ...s.profile,
       trophies: s.profile.trophies + (win ? 12 : 2),

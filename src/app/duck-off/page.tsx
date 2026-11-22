@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useGame, duck, DUCKS } from "@/providers/GameProvider";
 import { fightAction, startBattle, statsFor, settleFight } from "@/game/engine";
 import { DuckOffCanvas, type DuckOffCanvasProps } from "@/components/duckoff/DuckOffCanvas";
@@ -56,7 +56,7 @@ const DupSetup = memo(function DupSetup({
 });
 
 export default function DuckOffPage() {
-  const { state, action } = useGame();
+  const { state, action, ready } = useGame();
   const active = state.ownedDucks.find((o) => o.isActive) || state.ownedDucks[0];
   const b = state.battle;
 
@@ -86,6 +86,18 @@ export default function DuckOffPage() {
     if (!outcome || !active) return;
     action((s) => settleFight(s, { playerDuckId: active.duckId, opponentDuckId: opponentId, outcome }));
   };
+
+  // Dev/testing hook: /duck-off?brawl=1&autostart=1 boots Street Brawl straight
+  // away so the headless playtest harness can probe the Phaser game at page
+  // load. Stamina/duck checks still apply; nothing is bypassed.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("brawl") !== "1") return;
+    setMode((m) => (m === "classic" ? "brawl" : m));
+    if (params.get("autostart") === "1" && ready && canStart && brawlState === "idle") startBrawl();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, canStart, brawlState]);
 
   const brawlMatch: DuckOffCanvasProps["match"] | null =
     active && mode === "brawl" && brawlState === "fighting"

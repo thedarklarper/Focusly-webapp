@@ -181,9 +181,12 @@ export class FightScene extends Phaser.Scene {
     sprite.setRotation(lean * 0.006);
     sprite.y = f.y + offsetY;
 
-    if (f.hitFlash > 0) sprite.setTintFill();
-    else if (f.state === "ko") sprite.setTint(0x8899aa);
-    else sprite.clearTint();
+    // Phaser 4 removed setTintFill(); the fill-flash equivalent is
+    // setTint(color) + TintModes.FILL. tintMode persists across frames, so the
+    // non-flash branches reset it to MULTIPLY (the KO dim and the clear).
+    if (f.hitFlash > 0) sprite.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
+    else if (f.state === "ko") sprite.setTint(0x8899aa).setTintMode(Phaser.TintModes.MULTIPLY);
+    else sprite.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
 
     shadow.setScale(sx / base, 1);
     shadow.setAlpha(f.state === "jump" ? 0.12 : 0.26);
