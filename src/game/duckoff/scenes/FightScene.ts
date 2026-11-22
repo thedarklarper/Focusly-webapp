@@ -245,6 +245,140 @@ export class FightScene extends Phaser.Scene {
       const flash = this.add.rectangle(STAGE_W / 2, STAGE_H / 2, STAGE_W, STAGE_H, 0xfff9ef, big ? 0.3 : 0.18).setDepth(20);
       this.tweens.add({ targets: flash, alpha: 0, duration: 120, onComplete: () => flash.destroy() });
     }
+
+    // --- impact FX -----------------------------------------------------------
+    if (e.blocked) {
+      this.spawnBlockShimmer(e.x, e.y);
+    } else {
+      // Seeded per-impact so replays of a seeded match are identical.
+      const fxSeed = this.match.state.player.frame * 31 + this.match.state.opponent.frame * 17 + e.damage * 101;
+      if (e.move === "special" || big) this.spawnThunder(e.x, e.y, fxSeed);
+      this.spawnSparkBurst(e.x, e.y, fxSeed, big);
+      if (big) this.spawnShockwave(e.x, e.y);
+    }
+  }
+
+  /**
+   * Procedural lightning bolt: a jagged white-hot core with a wider colored
+   * glow behind it, striking down onto the impact point. Every run of a seeded
+   * match draws the same bolt — the jagged offsets come from mulberry32, the
+   * same RNG family the sim uses.
+   */
+  private spawnThunder(x: number, y: number, seed: number): void {
+    let a = (seed >>> 0) || 1;
+    const rng = () => {
+      a = (a + 0x6d2b79f5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+
+    const drawBolt = (g: Phaser.GameObjects.Graphics, jitter: number, width: number, color: number, alpha: number) => {
+      g.lineStyle(width, color, alpha);
+      g.beginPath();
+      g.moveTo(x + (rng() - 0.5) * jitter, y - 210);
+      const segments = 6;
+      for (let i = 1; i <= segments; i += 1) {
+        const t = i / segments;
+        const px = x + (rng() - 0.5) * jitter;
+        const py = y - 210 + 210 * t;
+        g.lineTo(px, py);
+      }
+      g.strokePath();
+    };
+
+    const g = this.add.graphics().setDepth(19).setBlendMode("ADD");
+    // glow pass, then white-hot core on top
+    drawBolt(g, 46, 7, 0x9ed9f4, 0.5);
+    drawBolt(g, 26, 3, 0xffffff, 0.95);
+    // a short branch off the main bolt
+    g.lineStyle(2, 0xfff9ef, 0.6);
+    g.beginPath();
+    const bx = x + (rng() - 0.5) * 40;
+    const by = y - 90;
+    g.moveTo(bx, by);
+    g.lineTo(bx + 26 + rng() * 18, by + 30 + rng() * 14);
+    g.strokePath();
+
+    this.tweens.add({
+      targets: g,
+      alpha: 0,
+      duration: 170,
+      ease: "Quad.easeIn",
+      onComplete: () => g.destroy(),
+    });
+
+    // bright pop at the strike point
+    const pop = this.add.image(x, y, "spark-lg").setDepth(19).setBlendMode("ADD").setTint(0x9ed9f4).setScale(1.4);
+    this.tweens.add({
+      targets: pop,
+      alpha: 0,
+      scale: 2.2,
+      duration: 200,
+      ease: "Quad.easeOut",
+      onComplete: () => pop.destroy(),
+    });
+  }
+
+  /** Radial burst of spark particles kicked out from the impact point. */
+  private spawnSparkBurst(x: number, y: number, seed: number, big: boolean): void {
+    const count = big ? 12 : 7;
+    let a = (seed ^ 0x9e3779b9) >>> 0 || 7;
+    const rng = () => {
+      a = (a + 0x6d2b79f5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+
+    for (let i = 0; i < count; i += 1) {
+      const angle = (i / count) * Math.PI * 2 + rng() * 0.5;
+      const dist = (big ? 46 : 30) + rng() * (big ? 30 : 18);
+      const dot = this.add
+        .image(x, y, "spark")
+        .setDepth(18)
+        .setBlendMode("ADD")
+        .setTint(big ? 0xf8c84a : 0xfff9ef)
+        .setScale(big ? 0.9 : 0.6);
+      this.tweens.add({
+        targets: dot,
+        x: x + Math.cos(angle) * dist,
+        y: y + Math.sin(angle) * dist * 0.7 + 10, // slight gravity bias
+        alpha: 0,
+        scale: 0.1,
+        duration: 260 + rng() * 140,
+        ease: "Quad.easeOut",
+        onComplete: () => dot.destroy(),
+      });
+    }
+  }
+
+  /** Expanding ring shockwave for heavy hits. */
+  private spawnShockwave(x: number, y: number): void {
+    const ring = this.add.circle(x, y, 8).setStrokeStyle(3, 0xfff9ef, 0.8).setDepth(17).setBlendMode("ADD");
+    this.tweens.add({
+      targets: ring,
+      radius: 64,
+      alpha: 0,
+      lineWidth: 1,
+      duration: 300,
+      ease: "Cubic.easeOut",
+      onComplete: () => ring.destroy(),
+    });
+  }
+
+  /** Small blue shimmer arc when a hit is blocked — no sparks, just a guard ping. */
+  private spawnBlockShimmer(x: number, y: number): void {
+    const arc = this.add.arc(x, y, 34, 220, 320, false).setStrokeStyle(3, 0x9ed9f4, 0.9).setDepth(18).setBlendMode("ADD");
+    this.tweens.add({
+      targets: arc,
+      alpha: 0,
+      scale: 1.3,
+      duration: 220,
+      onComplete: () => arc.destroy(),
+    });
   }
 
   private showBanner(primary: string, secondary?: string): void {

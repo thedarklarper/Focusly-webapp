@@ -33,10 +33,36 @@ const game = await page.evaluate(() => {
 
 const staminaShown = await page.evaluate(() => document.body.innerText.includes("TEST MODE"));
 
+// Fight for a bit so hit FX (sparks/thunder/shockwave) actually execute.
+for (let round = 0; round < 3; round += 1) {
+  await page.keyboard.down("ArrowRight");
+  await page.waitForTimeout(500);
+  await page.keyboard.up("ArrowRight");
+  await page.keyboard.down("KeyK"); // kick — triggers shockwave + burst
+  await page.waitForTimeout(200);
+  await page.keyboard.up("KeyK");
+  await page.keyboard.down("KeyJ"); // punch — burst
+  await page.waitForTimeout(150);
+  await page.keyboard.up("KeyJ");
+  await page.waitForTimeout(400);
+}
+
+const fight = await page.evaluate(() => {
+  const s = window.__PHASER_GAME__?.scene?.getScene?.("FightScene");
+  if (!s) return null;
+  return {
+    fps: Math.round(window.__PHASER_GAME__.loop.actualFps),
+    playerHp: s.match.state.player.hp,
+    opponentHp: s.match.state.opponent.hp,
+    displayObjects: s.children.length,
+  };
+});
+
 console.log("canvas:", canvas ? "found" : "MISSING");
 console.log("game:", game ? JSON.stringify(game) : "MISSING");
 console.log("chris test mode (infinite stamina):", staminaShown);
+console.log("after combat:", fight ? JSON.stringify(fight) : "MISSING");
 console.log("errors:", errors.length ? errors.slice(0, 5) : "none");
 await page.screenshot({ path: ".playtest/verify-loggedin.png" });
 await browser.close();
-process.exit(canvas && game && game.booted ? 0 : 1);
+process.exit(canvas && game && game.booted && errors.length === 0 ? 0 : 1);
