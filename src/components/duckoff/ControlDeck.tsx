@@ -51,62 +51,100 @@ export type ControlDeckProps = {
 };
 
 /**
- * Two-cluster layout: D-pad on the left, PUNCH/KICK/BLOCK/SPECIAL as a 2x2 on
- * the right, matching the sketch. Every target is >=44px high so it is
- * thumb-reachable on iOS Safari; the deck itself never scrolls the page.
+ * Two-cluster layout: a circular thumb-stick D-pad on the left (four direction
+ * buttons at N/W/E/S on a round navy base, like SF-mobile / Brawlhalla), and
+ * PUNCH/KICK/BLOCK/SPECIAL as a 2x2 on the right. Left/right are the primary
+ * movement, so they get the widest hit areas on the pad. Every target is
+ * >=44px so it is thumb-reachable on iOS Safari; the deck never scrolls.
+ *
+ * Pad geometry: 156px round base. Up/down are 56px circles centered on the
+ * N/S edges (offset 12px inward). Left/right are 64x60px rounded pills
+ * centered on the W/E edges. A 40px decorative hub sits in the middle, so the
+ * left/right buttons are >60px wide each.
  */
 export function ControlDeck({ input, enabled = true, specialReady = false }: ControlDeckProps) {
   const btnBase =
-    "flex w-full select-none items-center justify-center rounded-[14px] font-black uppercase tracking-[0.08em] text-white transition-transform duration-75 active:translate-y-[2px] active:scale-[0.98] disabled:opacity-40";
+    "flex select-none items-center justify-center rounded-[14px] font-black uppercase tracking-[0.08em] text-white transition-transform duration-75 active:translate-y-[2px] active:scale-[0.98] disabled:opacity-40";
+  // Round direction buttons: squash inward a touch on press instead of the
+  // card-style translate, so they read as keys sunk into a thumb-stick.
+  const dirBtn =
+    "absolute flex select-none items-center justify-center rounded-full text-[#E8E0D2] transition-transform duration-75 active:scale-95 disabled:opacity-40";
 
   return (
     <div
       className="grid w-full select-none grid-cols-2 items-start gap-4"
       style={{ touchAction: "none", userSelect: "none", overscrollBehavior: "contain" }}
     >
-      {/* ---- D-pad ---- */}
-      <div className="flex flex-col items-center gap-1">
-        <HoldBtn
-          input={input}
-          keyName="up"
-          enabled={enabled}
-          ariaLabel="Jump"
-          className={`${btnBase} h-[50px] w-[72px] bg-[#16253D] text-lg leading-none`}
+      {/* ---- Circular D-pad ---- */}
+      <div className="flex justify-center">
+        <div
+          className="relative h-[156px] w-[156px] rounded-full"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 32%, #213449 0%, #16253D 62%, #0E1A2C 100%)",
+            boxShadow:
+              "inset 0 2px 10px rgba(14,26,44,0.9), inset 0 -1px 0 rgba(232,224,210,0.08), 0 3px 8px rgba(14,26,44,0.35)",
+          }}
         >
-          ▲
-        </HoldBtn>
-        <div className="flex items-center gap-1">
+          {/* Decorative center hub */}
+          <div
+            aria-hidden
+            className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle at 50% 30%, #0F1D31 0%, #0A1524 100%)",
+              boxShadow: "inset 0 1px 3px rgba(14,26,44,0.9), 0 1px 0 rgba(232,224,210,0.06)",
+            }}
+          />
+
+          {/* Up (N) */}
+          <HoldBtn
+            input={input}
+            keyName="up"
+            enabled={enabled}
+            ariaLabel="Jump"
+            className={`${dirBtn} left-1/2 top-[8px] h-[56px] w-[56px] -translate-x-1/2 text-[20px] leading-none`}
+            style={{ background: "linear-gradient(180deg, #1D3050 0%, #16253D 100%)" }}
+          >
+            ▲
+          </HoldBtn>
+
+          {/* Down (S) */}
+          <HoldBtn
+            input={input}
+            keyName="down"
+            enabled={enabled}
+            ariaLabel="Crouch"
+            className={`${dirBtn} bottom-[8px] left-1/2 h-[56px] w-[56px] -translate-x-1/2 text-[20px] leading-none`}
+            style={{ background: "linear-gradient(0deg, #1D3050 0%, #16253D 100%)" }}
+          >
+            ▼
+          </HoldBtn>
+
+          {/* Left (W) — primary movement, wide hit area */}
           <HoldBtn
             input={input}
             keyName="left"
             enabled={enabled}
             ariaLabel="Walk left"
-            className={`${btnBase} h-12 w-14 bg-[#16253D] text-base leading-none`}
+            className={`${dirBtn} left-0 top-1/2 h-[60px] w-[64px] -translate-y-1/2 rounded-l-full rounded-r-[16px] text-[20px] leading-none`}
+            style={{ background: "linear-gradient(90deg, #1D3050 0%, #16253D 100%)" }}
           >
             ◀
           </HoldBtn>
-          <div className="flex h-12 w-12 items-center justify-center rounded-[10px] bg-[#E8E0D2] text-[10px] font-black uppercase tracking-[0.08em] text-[#718096]">
-            D-PAD
-          </div>
+
+          {/* Right (E) — primary movement, wide hit area */}
           <HoldBtn
             input={input}
             keyName="right"
             enabled={enabled}
             ariaLabel="Walk right"
-            className={`${btnBase} h-12 w-14 bg-[#16253D] text-base leading-none`}
+            className={`${dirBtn} right-0 top-1/2 h-[60px] w-[64px] -translate-y-1/2 rounded-r-full rounded-l-[16px] text-[20px] leading-none`}
+            style={{ background: "linear-gradient(270deg, #1D3050 0%, #16253D 100%)" }}
           >
             ▶
           </HoldBtn>
         </div>
-        <HoldBtn
-          input={input}
-          keyName="down"
-          enabled={enabled}
-          ariaLabel="Crouch"
-          className={`${btnBase} h-[50px] w-[72px] bg-[#16253D] text-lg leading-none`}
-        >
-          ▼
-        </HoldBtn>
       </div>
 
       {/* ---- Action buttons ---- */}
@@ -117,7 +155,7 @@ export function ControlDeck({ input, enabled = true, specialReady = false }: Con
             keyName="punch"
             enabled={enabled}
             ariaLabel="Punch"
-            className={`${btnBase} h-14 bg-[#7A1F2B] text-[14px]`}
+            className={`${btnBase} h-16 w-full bg-[#7A1F2B] text-[14px]`}
           >
             Punch
           </HoldBtn>
@@ -126,7 +164,7 @@ export function ControlDeck({ input, enabled = true, specialReady = false }: Con
             keyName="kick"
             enabled={enabled}
             ariaLabel="Kick"
-            className={`${btnBase} h-14 bg-[#62B58A] text-[14px] text-[#16253D]`}
+            className={`${btnBase} h-16 w-full bg-[#62B58A] text-[14px] text-[#16253D]`}
           >
             Kick
           </HoldBtn>
@@ -137,7 +175,7 @@ export function ControlDeck({ input, enabled = true, specialReady = false }: Con
             keyName="block"
             enabled={enabled}
             ariaLabel="Block"
-            className={`${btnBase} h-14 bg-[#9ED9F4] text-[14px] text-[#16253D]`}
+            className={`${btnBase} h-16 w-full bg-[#9ED9F4] text-[14px] text-[#16253D]`}
           >
             Block
           </HoldBtn>
@@ -146,7 +184,7 @@ export function ControlDeck({ input, enabled = true, specialReady = false }: Con
             keyName="special"
             enabled={enabled}
             ariaLabel="Quack Combo"
-            className={`${btnBase} h-14 bg-[#F8C84A] text-[13px] text-[#16253D] ${specialReady ? "ring-2 ring-[#F2815A]" : ""}`}
+            className={`${btnBase} h-16 w-full bg-[#F8C84A] text-[13px] text-[#16253D] ${specialReady ? "ring-2 ring-[#F2815A]" : ""}`}
           >
             Special
           </HoldBtn>
