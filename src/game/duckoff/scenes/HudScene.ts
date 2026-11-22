@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { HUD_H, STAGE_W } from "../constants";
+import { HUD_H, LOGO_KEY, STAGE_W } from "../constants";
 import { roundSecondsLeft } from "../match";
 import type { MatchState } from "../match";
 
@@ -38,6 +38,9 @@ export class HudScene extends Phaser.Scene {
     this.add.text(W - 16, 21, "", font(12, "800", "#FFF9EF")).setOrigin(1, 0).setName("hud-name-p2").setDepth(11);
     // Leading "@" keeps the clock out of update()'s text-glomming before a match is live.
     this.add.text(W / 2, 10, "@", font(26, "900", "#FFF9EF")).setOrigin(0.5, 0).setName("hud-clock").setDepth(11);
+    // Small brand mark in the empty lower band of the HUD, quiet so it never
+    // competes with the health bars.
+    this.add.image(W / 2, HUD_H - 18, LOGO_KEY).setDisplaySize(20, 20).setAlpha(0.35).setDepth(11).setName("hud-logo");
   }
 
   update(): void {

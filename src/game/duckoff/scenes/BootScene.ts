@@ -1,13 +1,18 @@
 import Phaser from "phaser";
+import { LOGO_KEY, LOGO_URL } from "../constants";
 
 /**
- * Generates the small set of textures the arena needs so the game has no
- * binary asset dependencies beyond the duck portraits. Running this in Boot
- * means the preloader can show a progress bar immediately.
+ * Generates the small set of textures the arena needs and loads the logo, so
+ * the preloader and title splash have it immediately. Running this in Boot
+ * means the preloader can show a progress bar right away.
  */
 export class BootScene extends Phaser.Scene {
   constructor() {
     super({ key: "BootScene" });
+  }
+
+  preload(): void {
+    this.load.image(LOGO_KEY, LOGO_URL);
   }
 
   create(): void {

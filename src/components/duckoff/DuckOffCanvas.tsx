@@ -115,6 +115,8 @@ export function DuckOffCanvas({ match, playerSprite, opponentSprite, onFinish, o
       <div ref={parentRef} className="absolute inset-0" style={{ touchAction: "none" }} />
       {loading ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#16253D]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/duckoff-logo.png" alt="" width={44} height={44} />
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#F8C84A] border-t-transparent" aria-hidden="true" />
           <p className="text-[13px] font-black uppercase tracking-[0.12em] text-[#FFF9EF]">Loading the pond…</p>
         </div>

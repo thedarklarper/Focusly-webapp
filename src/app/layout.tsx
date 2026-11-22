@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "Focusly — a calmer phone, a happier flock",
   description: "Turn focus into a flock of duck companions. Less scroll. More soul.",
   applicationName: "Focusly",
+  icons: { icon: "/duckoff-logo.png" },
 };
 
 export const viewport: Viewport = {

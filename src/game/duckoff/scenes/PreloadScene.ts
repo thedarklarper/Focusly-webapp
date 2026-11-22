@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { HUD_H, STAGE_H, STAGE_W } from "../constants";
+import { HUD_H, LOGO_KEY, STAGE_H, STAGE_W } from "../constants";
 import { REG_SETUP, SceneSetup } from "../config";
 
 /** Loads only the two portraits in play, then hands off to the fight. */
@@ -19,6 +19,7 @@ export class PreloadScene extends Phaser.Scene {
     const cy = HUD_H + (STAGE_H - HUD_H) / 2;
 
     const barW = 220;
+    this.add.image(cx, cy - 72, LOGO_KEY).setDisplaySize(56, 56);
     const barBg = this.add.rectangle(cx, cy, barW, 10, 0x16253d, 0.15).setOrigin(0.5);
     const bar = this.add.rectangle(cx - barW / 2, cy, 2, 10, 0x16253d).setOrigin(0, 0.5);
     this.add
@@ -43,7 +44,6 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.scene.start("FightScene");
-    this.scene.launch("HudScene");
+    this.scene.start("LogoScene");
   }
 }

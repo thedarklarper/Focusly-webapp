@@ -37,6 +37,10 @@ export const ROUNDS_TO_WIN = 2;
 export const REG_MATCH = "duckoff:match";
 export const REG_FINISH = "duckoff:finish";
 
+/** The single logo file, loaded in Boot and reused by every screen. */
+export const LOGO_KEY = "duckoff-logo";
+export const LOGO_URL = "/duckoff-logo.png";
+
 /** Event names on the Phaser game event bus. */
 export const EVT_HUD = "duckoff:hud";
 export const EVT_ROUND = "duckoff:round";

@@ -4,6 +4,7 @@ import { MatchConfig } from "./match";
 import { FightOutcome, InputState } from "./types";
 import { BootScene } from "./scenes/BootScene";
 import { PreloadScene } from "./scenes/PreloadScene";
+import { LogoScene } from "./scenes/LogoScene";
 import { FightScene } from "./scenes/FightScene";
 import { HudScene } from "./scenes/HudScene";
 
@@ -47,7 +48,7 @@ export const buildGameConfig = (parent: HTMLElement, setup: SceneSetup): Phaser.
   },
   render: { antialias: true, roundPixels: true, pixelArt: false },
   audio: { noAudio: true },
-  scene: [BootScene, PreloadScene, FightScene, HudScene],
+  scene: [BootScene, PreloadScene, LogoScene, FightScene, HudScene],
   callbacks: {
     preBoot: (game) => {
       game.registry.set(REG_SETUP, setup);
