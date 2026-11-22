@@ -196,7 +196,79 @@ export const fightAction = (s: GameState, action: BattleAction): GameState => {
   next = { ...next, opponentX: aiX, opponentBlocking: aiBlocking, opponentJumping: aiJumping, playerHp, opponentEnergy, playerEnergy, opponentDamageDealt: b.opponentDamageDealt + opponentDamage, log: logs.slice(-6), turn: "player", cooldown: Math.max(0, next.cooldown - 1) };
   if (playerHp <= 0) return settleBattle(s, { ...next, finished: true, result: "loss", log: [...next.log, "Your duck needs a rest."] });
   return { ...s, battle: next };
+}
+
+/**
+ * Reward adapter for the Phaser Street Brawl mode.
+ *
+ * `FightOutcome` comes from `src/game/duckoff/types.ts`; the reward shape
+ * (breadcrumbs, trophies, XP, outbox entries) mirrors settleBattle exactly, so
+ * the Duck Off page, the trophy road, the outbox and the Supabase sync keep
+ * working unchanged regardless of which mode was played.
+ */
+export const settleFight = (s: GameState, brawl: { playerDuckId: string; opponentDuckId: string; outcome: FightOutcomeLike }): GameState => {
+  const win = brawl.outcome.result === "win";
+  const [pRounds, oRounds] = brawl.outcome.rounds;
+  const reward = win ? 75 : 20;
+  const xp = win ? 40 : 15;
+  const opponentName = getDuck(brawl.opponentDuckId).name;
+  return {
+    ...s,
+    // Mark the shared battle slot finished, exactly like settleBattle does, so
+    // startBattle's "battle in progress" guard lifts and the next brawl can
+    // charge its 20 stamina again.
+    battle: s.battle ? { ...s.battle, finished: true, result: win ? ("win" as const) : ("loss" as const) } : s.battle,
+    profile: {
+      ...s.profile,
+      trophies: s.profile.trophies + (win ? 12 : 2),
+      breadcrumbs: s.profile.breadcrumbs + reward,
+      screenTimeMinutes: s.profile.screenTimeMinutes + (win ? 15 : 5),
+    },
+    ownedDucks: s.ownedDucks.map((o) => (o.isActive ? { ...o, xp: o.xp + xp, level: levelFor({ ...o, xp: o.xp + xp }), energy: Math.max(0, o.energy - 3) } : o)),
+    recentRewards: [
+      win
+        ? `Street Brawl win! +${reward} Breadcrumbs (${pRounds}-${oRounds} vs ${opponentName})`
+        : `Street Brawl good try! +${reward} Breadcrumbs (${pRounds}-${oRounds} vs ${opponentName})`,
+      ...s.recentRewards,
+    ].slice(0, 5),
+    outbox: [
+      ...s.outbox,
+      {
+        kind: "transaction",
+        type: win ? "street_brawl_win" : "street_brawl_loss",
+        breadcrumbs_change: reward,
+        hatching_credits_change: 0,
+        screen_time_minutes_change: win ? 15 : 5,
+        trophies_change: win ? 12 : 2,
+        description: win ? "Won Duck Off: Street Brawl" : "Street Brawl consolation",
+      } as const,
+      {
+        kind: "battle",
+        playerDuckId: brawl.playerDuckId,
+        opponentDuckId: brawl.opponentDuckId,
+        result: win ? "win" : "loss",
+        trophies_earned: win ? 12 : 2,
+        breadcrumbs_earned: reward,
+        screen_time_minutes_earned: win ? 15 : 5,
+      } as const,
+    ],
+    sync: { ...s.sync, pending: s.sync.pending + 1 },
+  };
 };
+
+/**
+ * Structural shape of the Phaser match outcome. Duplicated here so engine.ts
+ * does not import the duckoff types module and risk tangling client/server
+ * bundles; it stays assignable to the real FightOutcome as long as fields match.
+ */
+type FightOutcomeLike = {
+  result: "win" | "loss";
+  rounds: [number, number];
+  playerHp: number;
+  opponentHp: number;
+  playerMaxHp: number;
+  opponentMaxHp: number;
+};;
 
 
 const settleBattle = (s: GameState, b: NonNullable<GameState["battle"]>): GameState => {
