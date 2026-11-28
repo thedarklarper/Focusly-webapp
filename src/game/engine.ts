@@ -16,7 +16,33 @@ export const starterState = (): GameState => ({
   recentRewards: ["Starter flock joined", "+420 Breadcrumbs ready"],
   outbox: [],
   sync: { pending: 0, status: "offline" },
+  focusSession: null,
 });
+
+export const startFocus = (s: GameState, minutes: number): GameState =>
+  s.focusSession ? s : { ...s, focusSession: { startedAt: Date.now(), durationMinutes: minutes } };
+
+export const cancelFocus = (s: GameState): GameState => (s.focusSession ? { ...s, focusSession: null } : s);
+
+/**
+ * Settle a running focus session. Idempotent: a session that is missing, or
+ * already settled (cleared), leaves state untouched. Rewards only fire once —
+ * on completion the session is cleared, so a second call is a no-op.
+ */
+export const settleFocus = (s: GameState, now = Date.now()): GameState => {
+  const session = s.focusSession;
+  if (!session) return s;
+  const elapsedMs = now - session.startedAt;
+  const totalMs = session.durationMinutes * 60000;
+  if (elapsedMs < totalMs) return s;
+  return rewardFocus({ ...s, focusSession: null }, session.durationMinutes);
+};
+
+export const focusRemainingMs = (s: GameState, now = Date.now()): number => {
+  const session = s.focusSession;
+  if (!session) return 0;
+  return Math.max(0, session.durationMinutes * 60000 - (now - session.startedAt));
+};
 
 export const levelFor = (o: OwnedDuck) => Math.max(1, Math.floor(o.xp / 100) + 1);
 

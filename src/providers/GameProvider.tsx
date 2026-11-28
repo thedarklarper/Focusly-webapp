@@ -15,6 +15,8 @@ type Ctx = {
   signOut: () => void;
   action: (fn: (s: GameState) => GameState) => void;
   focus: (minutes: number) => void;
+  startFocus: (minutes: number) => void;
+  cancelFocus: () => void;
   hatch: () => Duck | null;
   sync: () => void;
   refreshFromCloud: () => Promise<void>;
@@ -35,6 +37,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       if (saved) {
         s.profile = { ...s.profile, id: saved.id, username: saved.display };
       }
+      // Resume or settle any focus session persisted with the rest of state.
+      s = engine.settleFocus(s);
       setState(s);
       setAccount(saved);
       setReady(true);
@@ -68,6 +72,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const action = (fn: (s: GameState) => GameState) => setState((s) => fn(s));
   const focus = (minutes: number) => setState((s) => engine.rewardFocus({ ...s, focus: { ...s.focus, running: false } }, minutes));
+  const startFocus = (minutes: number) => setState((s) => engine.startFocus(s, minutes));
+  const cancelFocus = () => setState((s) => engine.cancelFocus(s));
   const hatch = () => {
     let out: Duck | null = null;
     setState((s) => {
@@ -87,7 +93,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     setState(s);
   };
 
-  return <GameCtx.Provider value={{ state, ready, account, signIn, signOut, action, focus, hatch, sync, refreshFromCloud }}>{children}</GameCtx.Provider>;
+  return <GameCtx.Provider value={{ state, ready, account, signIn, signOut, action, focus, startFocus, cancelFocus, hatch, sync, refreshFromCloud }}>{children}</GameCtx.Provider>;
 }
 
 export const useGame = () => useContext(GameCtx)!;
