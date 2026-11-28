@@ -16,6 +16,7 @@ export const starterState = (): GameState => ({
   recentRewards: ["Starter flock joined", "+420 Breadcrumbs ready"],
   outbox: [],
   sync: { pending: 0, status: "offline" },
+  musicEnabled: true,
 });
 
 export const levelFor = (o: OwnedDuck) => Math.max(1, Math.floor(o.xp / 100) + 1);

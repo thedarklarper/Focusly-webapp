@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import { useGame } from "@/providers/GameProvider";
 
 /**
  * Site-wide background music (Minecraft's desert track "Crescent Dunes",
@@ -10,17 +11,20 @@ import { usePathname } from "next/navigation";
  *
  * Browsers block audio until a user gesture: the sign-in click usually precedes
  * this component mounting, and a first-tap unlock listener covers the rest.
+ * The on/off switch lives in state.musicEnabled, controlled from Settings.
  */
 export function BackgroundMusic() {
   const ref = useRef<HTMLAudioElement>(null);
   const pathname = usePathname();
+  const { state } = useGame();
   const pausedForBrawl = pathname?.startsWith("/duck-off") ?? false;
+  const enabled = state.musicEnabled;
 
   useEffect(() => {
     const a = ref.current;
     if (!a) return;
 
-    if (pausedForBrawl) {
+    if (pausedForBrawl || !enabled) {
       a.pause();
       return;
     }
@@ -34,7 +38,7 @@ export function BackgroundMusic() {
     const unlock = () => tryPlay();
     window.addEventListener("pointerdown", unlock, { once: true });
     return () => window.removeEventListener("pointerdown", unlock);
-  }, [pausedForBrawl]);
+  }, [pausedForBrawl, enabled]);
 
   return <audio ref={ref} src="/audio/overworld-desert.m4a" loop preload="auto" aria-hidden="true" />;
 }

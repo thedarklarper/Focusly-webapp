@@ -87,4 +87,5 @@ export type GameState = {
   outbox: SyncEvent[];
   battle?: BattleState;
   sync: { userId?: string; pending: number; lastSyncedAt?: number; status: "offline" | "ready" | "syncing" | "error" };
+  musicEnabled: boolean;
 };
