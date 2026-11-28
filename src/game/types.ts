@@ -78,6 +78,7 @@ export type GameState = {
   focus: { running: boolean; startedAt?: number; duration: number };
   lastEarnedAt: number;
   streak: number;
+  lastFocusDay: string | null;
   eggs: number;
   gear: Record<string, number>;
   claimedMilestones: number[];

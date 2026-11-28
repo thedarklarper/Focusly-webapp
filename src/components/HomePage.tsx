@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useGame, duck } from "@/providers/GameProvider";
-import { focusRemainingMs } from "@/game/engine";
+import { focusRemainingMs, dayDiff, todayKey } from "@/game/engine";
 import { Button, Card, C, Header, Meter, Pill, SectionLabel, Shell } from "@/components/ui";
 import { DuckArt } from "@/components/DuckArt";
 
@@ -15,6 +15,8 @@ export function HomePage() {
 
   const active = state.ownedDucks.find((o) => o.isActive) || state.ownedDucks[0];
   const ad = duck(active?.duckId || "prototype");
+  const streakAtRisk = !!state.lastFocusDay && state.streak > 0 && dayDiff(state.lastFocusDay, todayKey()) > 1;
+  const streakDoneToday = !!state.lastFocusDay && dayDiff(state.lastFocusDay, todayKey()) === 0;
 
   const session = state.focusSession;
   const running = !!session;
@@ -113,6 +115,26 @@ export function HomePage() {
             <p className="mb-3 text-center text-[44px] font-black tabular-nums text-[#16253D]">{mmss}</p>
             <Button title={running ? "Cancel focus" : `Start ${minutes}-minute focus`} onClick={running ? cancel : start} secondary={running} />
             <p className="mt-2 text-[11px] text-[#718096]">The timer must run to 0:00 to claim rewards — cancelling gives none. Completing 60+ minutes grants bonus Breadcrumbs &amp; a Hatching Credit.</p>
+          </Card>
+
+          <Card className={streakAtRisk ? "border-2 border-[#F2815A]" : undefined}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[17px] font-black text-[#16253D]">Daily streak</p>
+                <p className={`text-[13px] ${streakAtRisk ? "font-bold text-[#F2815A]" : "text-[#5C6B7F]"}`}>
+                  {streakAtRisk
+                    ? `At risk — focus today to keep your day ${state.streak} streak`
+                    : streakDoneToday
+                      ? `Day ${state.streak} done. Come back tomorrow.`
+                      : state.streak > 0
+                        ? `Day ${state.streak} — focus today to keep it going`
+                        : "Complete a focus sprint to start a streak"}
+                </p>
+              </div>
+              <div className={`flex h-12 w-12 items-center justify-center rounded-[18px] ${streakAtRisk ? "bg-[#F2815A]" : "bg-[#F1EBE0]"}`}>
+                <span className="text-[22px]">🔥</span>
+              </div>
+            </div>
           </Card>
 
 
