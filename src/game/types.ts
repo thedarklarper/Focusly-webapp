@@ -76,8 +76,6 @@ export type GameState = {
   };
   ownedDucks: OwnedDuck[];
   focus: { running: boolean; startedAt?: number; duration: number };
-  protection: boolean;
-  blacklist: string[];
   lastEarnedAt: number;
   streak: number;
   eggs: number;

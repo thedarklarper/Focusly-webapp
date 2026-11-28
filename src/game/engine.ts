@@ -5,8 +5,6 @@ export const starterState = (): GameState => ({
   profile: { id: "local", username: "focus friend", breadcrumbs: 420, hatchingCredits: 2, trophies: 0, screenTimeMinutes: 45, stamina: 200, activeDuckId: "prototype" },
   ownedDucks: [{ id: "local-prototype", duckId: "prototype", level: 1, xp: 0, energy: 100, isActive: true, isAsleep: false }],
   focus: { running: false, duration: 60 },
-  protection: false,
-  blacklist: ["Social media", "Short video", "News feeds"],
   // Avoid Date.now() during server prerender (initial useState value is computed server-side).
   lastEarnedAt: typeof window === "undefined" ? 0 : Date.now(),
   streak: 3,
@@ -297,6 +295,10 @@ export const TROPHY_REWARDS: TrophyReward[] = [
   { threshold: 75, title: "Street regular", description: "Your flock knows your focus face.", hatchingCredits: 1, eggs: 1 },
   { threshold: 150, title: "Champion pond", description: "Unlock a legendary companion.", duckId: "war", breadcrumbs: 250 },
   { threshold: 250, title: "Golden hour", description: "A full focus hour for your future self.", screenTimeMinutes: 60, hatchingCredits: 2 },
+  { threshold: 400, title: "Pond keeper", description: "Your flock eats well tonight.", breadcrumbs: 350, eggs: 1 },
+  { threshold: 600, title: "Quiet mornings", description: "Focus is starting to feel like a habit.", screenTimeMinutes: 90, breadcrumbs: 200 },
+  { threshold: 900, title: "Duck of steel", description: "A second legendary joins the pond.", duckId: "war", hatchingCredits: 2 },
+  { threshold: 1400, title: "Long game", description: "You showed up for the whole road. The pond is yours.", breadcrumbs: 600, screenTimeMinutes: 120, hatchingCredits: 3 },
 ];
 
 export const claimMilestone = (s: GameState, reward: TrophyReward): GameState => {
