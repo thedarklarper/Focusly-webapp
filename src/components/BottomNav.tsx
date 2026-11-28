@@ -8,6 +8,7 @@ const items = [
   { href: "/ducks", label: "Ducks", icon: "🦆" },
   { href: "/duck-off", label: "Duck Off", icon: "⚔️" },
   { href: "/shop", label: "Shop", icon: "🥚" },
+  { href: "/achievements", label: "Badges", icon: "🏅" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
@@ -15,7 +16,7 @@ export function BottomNav() {
   const path = usePathname();
   return (
     <nav className="fixed bottom-0 left-1/2 z-20 w-full max-w-[480px] -translate-x-1/2 border-t border-[#E8E0D2] bg-white/95 backdrop-blur">
-      <div className="grid grid-cols-5">
+      <div className="grid grid-cols-6">
         {items.map((it) => {
           const on = it.href === "/" ? path === "/" : path.startsWith(it.href);
           return (

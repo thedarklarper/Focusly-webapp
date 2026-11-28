@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { GameProvider } from "@/providers/GameProvider";
 import { LoginGate } from "@/components/LoginGate";
+import { Onboarding } from "@/components/Onboarding";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
@@ -26,7 +27,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${geistSans.variable} h-full`}>
       <body className="min-h-dvh bg-cream font-sans text-navy">
         <GameProvider>
-          <LoginGate>{children}</LoginGate>
+          <LoginGate>
+            <Onboarding />
+            {children}
+          </LoginGate>
         </GameProvider>
       </body>
     </html>
