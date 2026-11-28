@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { GameState, Duck } from "@/game/types";
-import { loadGameState, saveGameState } from "@/services/storage";
+import { loadGameState, saveGameState, loadSignedInGameState, syncGameState } from "@/services/storage";
 import { findAccount, getSessionAccount, setSessionAccount, LocalAccount } from "@/services/accounts";
 import * as engine from "@/game/engine";
 import { DUCKS, getDuck } from "@/data/ducks";
@@ -50,14 +50,36 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     if (ready && account) saveGameState(state, account.id);
   }, [state, ready, account]);
 
+  // Push accumulated outbox events (focus sessions, transactions, battles)
+  // to Supabase whenever there are pending events. Local save always happens
+  // first; cloud sync is best-effort and keeps events queued on failure.
+  const syncingRef = useRef(false);
+  useEffect(() => {
+    if (!ready || !account) return;
+    if (state.outbox.length === 0 || syncingRef.current) return;
+    syncingRef.current = true;
+    syncGameState(state)
+      .then((next) => setState(next))
+      .finally(() => {
+        syncingRef.current = false;
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, account, state.outbox.length]);
+
   const signIn = (handle: string, password: string) => {
     const found = findAccount(handle);
     if (!found) return { ok: false, error: "No account with that name." };
     if (password !== "123456") return { ok: false, error: "Wrong password. Try 123456." };
     setSessionAccount(found.id);
     setAccount(found);
-    loadGameState(found.id).then((s) => {
+    loadGameState(found.id).then(async (s) => {
       s.profile = { ...s.profile, id: found.id, username: found.display };
+      // If a Supabase session exists, hydrate from the cloud profile.
+      try {
+        s = await loadSignedInGameState(s);
+      } catch {
+        /* offline or no cloud session — keep local state */
+      }
       setState(s);
     });
     return { ok: true };

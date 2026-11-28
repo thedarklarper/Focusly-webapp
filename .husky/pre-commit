@@ -1,0 +1,6 @@
+#!/bin/sh
+# Local commit gate: mirrors .github/workflows/ci.yml
+echo "▶ typecheck"
+npm run typecheck || exit 1
+echo "▶ tests"
+npm test || exit 1

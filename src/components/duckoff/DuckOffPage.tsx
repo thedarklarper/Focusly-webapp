@@ -20,6 +20,7 @@ const DupSetup = memo(function DupSetup({
   canStart,
   onStart,
   activeName,
+  activeDuckId,
   title,
 }: {
   opponentId: string;
@@ -27,6 +28,7 @@ const DupSetup = memo(function DupSetup({
   canStart: boolean;
   onStart: () => void;
   activeName?: string;
+  activeDuckId?: string;
   title: string;
 }) {
   return (
@@ -34,7 +36,7 @@ const DupSetup = memo(function DupSetup({
       <p className="text-[17px] font-black text-[#16253D]">Choose your opponent</p>
       <p className="text-[13px] text-[#718096]">Your active duck is {activeName ?? "—"}.</p>
       <div className="mt-3 grid grid-cols-2 gap-2">
-        {DUCKS.filter((d) => d.id !== activeName).map((d) => (
+        {DUCKS.filter((d) => d.id !== activeDuckId).map((d) => (
           <button
             key={d.id}
             onClick={() => setOpponentId(d.id)}
@@ -174,6 +176,7 @@ export function DuckOffPage() {
           canStart={canStart}
           onStart={startBrawl}
           activeName={activeName}
+          activeDuckId={active?.duckId}
           title={isDevAccount ? "Enter the arena" : "Enter the arena (20 stamina)"}
         />
       ) : null}

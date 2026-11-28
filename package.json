@@ -5,7 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "sim-check": "tsx scripts/duckoff-sim-check.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
@@ -21,6 +25,8 @@
     "@types/react-dom": "^19",
     "playwright": "^1.65.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }
