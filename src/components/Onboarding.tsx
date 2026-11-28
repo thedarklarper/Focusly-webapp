@@ -6,8 +6,11 @@ import { DuckArt } from "@/components/DuckArt";
 import { Button } from "@/components/ui";
 
 export function Onboarding() {
-  const { action } = useGame();
+  const { state, action } = useGame();
   const [step, setStep] = useState(0);
+
+  // Once onboarding is done (or skipped), stay out of the way.
+  if (state.onboarded) return null;
 
   const finish = () => action((s) => ({ ...s, onboarded: true }));
 
