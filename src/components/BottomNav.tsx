@@ -10,6 +10,7 @@ const items = [
   { href: "/shop", label: "Shop", icon: "🥚" },
   { href: "/profile", label: "Profile", icon: "👤" },
   { href: "/stats", label: "Stats", icon: "📊" },
+  { href: "/settings", label: "Settings", icon: "⚙️" },
 ];
 
 export function BottomNav() {

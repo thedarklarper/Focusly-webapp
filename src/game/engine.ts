@@ -17,6 +17,7 @@ export const starterState = (): GameState => ({
   focusLog: [],
   sync: { pending: 0, status: "offline" },
   focusSession: null,
+  musicEnabled: true,
 });
 
 export const startFocus = (s: GameState, minutes: number): GameState =>

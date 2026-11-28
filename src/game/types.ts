@@ -88,4 +88,5 @@ export type GameState = {
   battle?: BattleState;
   focusSession: { startedAt: number; durationMinutes: number } | null;
   sync: { userId?: string; pending: number; lastSyncedAt?: number; status: "offline" | "ready" | "syncing" | "error" };
+  musicEnabled: boolean;
 };
