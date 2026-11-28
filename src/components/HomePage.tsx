@@ -3,43 +3,42 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useGame, duck } from "@/providers/GameProvider";
+import { focusRemainingMs } from "@/game/engine";
 import { Button, Card, C, Header, Meter, Pill, SectionLabel, Shell } from "@/components/ui";
 import { DuckArt } from "@/components/DuckArt";
 
 export function HomePage() {
-  const { state, action, focus } = useGame();
+  const { state, action, focus, startFocus, cancelFocus } = useGame();
   const [tab, setTab] = useState<"time" | "ducks">("time");
   const [minutes, setMinutes] = useState(60);
-  const [running, setRunning] = useState(false);
-  const [seconds, setSeconds] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
 
   const active = state.ownedDucks.find((o) => o.isActive) || state.ownedDucks[0];
   const ad = duck(active?.duckId || "prototype");
 
-  const start = () => {
-    setSeconds(minutes * 60);
-    setRunning(true);
-  };
+  const session = state.focusSession;
+  const running = !!session;
 
-  const cancel = () => {
-    setRunning(false);
-    setSeconds(0);
-  };
-
-  // Real countdown: tick down one second at a time and only settle rewards at 0:00.
+  // Tick once per second while a session is running; settle fires in the
+  // provider/engine when remaining hits zero (idempotent, no double rewards).
   useEffect(() => {
-    if (!running) return;
-    if (seconds <= 0) {
-      setRunning(false);
-      focus(minutes);
-      return;
-    }
-    const t = setTimeout(() => setSeconds((s) => s - 1), 1000);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [running, seconds]);
+    if (!session) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [session]);
 
-  const mmss = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+  useEffect(() => {
+    if (!session) return;
+    if (focusRemainingMs(state, now) <= 0) focus(session.durationMinutes);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, now]);
+
+  const start = () => startFocus(minutes);
+  const cancel = () => cancelFocus();
+
+  const remainingMs = session ? focusRemainingMs(state, now) : minutes * 60000;
+  const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+  const mmss = `${String(Math.floor(remainingSec / 60)).padStart(2, "0")}:${String(remainingSec % 60).padStart(2, "0")}`;
 
   return (
     <Shell>
