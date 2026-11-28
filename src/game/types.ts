@@ -85,6 +85,7 @@ export type GameState = {
   claimedMilestones: number[];
   recentRewards: string[];
   outbox: SyncEvent[];
+  focusLog: { date: string; minutes: number }[];
   battle?: BattleState;
   sync: { userId?: string; pending: number; lastSyncedAt?: number; status: "offline" | "ready" | "syncing" | "error" };
 };
