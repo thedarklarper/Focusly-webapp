@@ -82,6 +82,7 @@ export type GameState = {
   eggs: number;
   gear: Record<string, number>;
   claimedMilestones: number[];
+  onboarded: boolean;
   recentRewards: string[];
   outbox: SyncEvent[];
   focusLog: { date: string; minutes: number }[];

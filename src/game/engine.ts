@@ -12,6 +12,7 @@ export const starterState = (): GameState => ({
   eggs: 0,
   gear: {},
   claimedMilestones: [],
+  onboarded: false,
   recentRewards: ["Starter flock joined", "+420 Breadcrumbs ready"],
   outbox: [],
   focusLog: [],

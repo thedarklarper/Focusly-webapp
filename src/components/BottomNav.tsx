@@ -8,6 +8,7 @@ const items = [
   { href: "/ducks", label: "Ducks", icon: "🦆" },
   { href: "/duck-off", label: "Duck Off", icon: "⚔️" },
   { href: "/shop", label: "Shop", icon: "🥚" },
+  { href: "/achievements", label: "Badges", icon: "🏅" },
   { href: "/profile", label: "Profile", icon: "👤" },
   { href: "/stats", label: "Stats", icon: "📊" },
   { href: "/settings", label: "Settings", icon: "⚙️" },
