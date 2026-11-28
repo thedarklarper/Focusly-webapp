@@ -116,28 +116,6 @@ export function HomePage() {
             <p className="mt-2 text-[11px] text-[#718096]">The timer must run to 0:00 to claim rewards — cancelling gives none. Completing 60+ minutes grants bonus Breadcrumbs &amp; a Hatching Credit.</p>
           </Card>
 
-          <Card>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[17px] font-black text-[#16253D]">Distraction shield</p>
-                <p className="text-[13px] text-[#718096]">Simulated protection while you focus.</p>
-              </div>
-              <button
-                onClick={() => action((s) => ({ ...s, protection: !s.protection }))}
-                className={`relative h-8 w-14 rounded-full transition ${state.protection ? "bg-[#62B58A]" : "bg-[#D8D2C6]"}`}
-                aria-label="Toggle distraction shield"
-              >
-                <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-all ${state.protection ? "left-7" : "left-1"}`} />
-              </button>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {state.blacklist.map((b) => (
-                <span key={b} className="rounded-full bg-[#F1EBE0] px-3 py-1 text-[12px] font-bold text-[#16253D]">
-                  {b}
-                </span>
-              ))}
-            </div>
-          </Card>
 
           <SectionLabel>Recent rewards</SectionLabel>
           <Card>
