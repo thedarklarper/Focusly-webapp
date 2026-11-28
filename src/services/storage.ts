@@ -1,5 +1,5 @@
 import { GameState } from "@/game/types";
-import { starterState } from "@/game/engine";
+import { starterState, todayKey, dayDiff } from "@/game/engine";
 import { getSupabase } from "@/lib/supabase";
 import { DUCKS, getDuck } from "@/data/ducks";
 
@@ -30,13 +30,19 @@ export async function loadGameState(userId?: string): Promise<GameState> {
     if (!raw) return starterState();
     const saved = JSON.parse(raw) as Partial<GameState>;
     const initial = starterState();
-    return {
+    const next = {
       ...initial,
       ...saved,
       profile: { ...initial.profile, ...(saved.profile || {}) },
       sync: { ...initial.sync, ...(saved.sync || {}) },
       outbox: saved.outbox || [],
     };
+    // Streak at-risk: if the last focus day is older than yesterday, the live
+    // streak is broken and resets to 0 until the next completed focus.
+    if (next.lastFocusDay && next.streak > 0 && dayDiff(next.lastFocusDay, todayKey()) > 1) {
+      next.streak = 0;
+    }
+    return next;
   } catch {
     return starterState();
   }

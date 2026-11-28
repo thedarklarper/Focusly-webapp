@@ -10,6 +10,7 @@ export const starterState = (): GameState => ({
   // Avoid Date.now() during server prerender (initial useState value is computed server-side).
   lastEarnedAt: typeof window === "undefined" ? 0 : Date.now(),
   streak: 3,
+  lastFocusDay: null,
   eggs: 0,
   gear: {},
   claimedMilestones: [],
@@ -29,14 +30,22 @@ export const statsFor = (o: OwnedDuck, d: Duck) => ({
 
 export const offlineBreadcrumbs = (s: GameState, now = Date.now()) => Math.max(0, Math.floor((now - s.lastEarnedAt) / 1800000));
 
+export const todayKey = (now = new Date()): string => `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+export const dayDiff = (a: string, b: string): number => Math.round((new Date(`${b}T00:00:00`).getTime() - new Date(`${a}T00:00:00`).getTime()) / 86400000);
+
 export const rewardFocus = (s: GameState, minutes: number): GameState => {
   const active = s.ownedDucks.find((o) => o.isActive);
+  const today = todayKey();
+  const streak = s.lastFocusDay && dayDiff(s.lastFocusDay, today) === 0 ? s.streak : s.lastFocusDay && dayDiff(s.lastFocusDay, today) === 1 ? s.streak + 1 : 1;
   const base = Math.max(1, Math.floor(minutes / 30));
   const gain = minutes >= 60 ? base + 100 : base;
   const next: GameState = {
     ...s,
     profile: { ...s.profile, breadcrumbs: s.profile.breadcrumbs + gain, hatchingCredits: s.profile.hatchingCredits + (minutes >= 60 ? 1 : 0), screenTimeMinutes: s.profile.screenTimeMinutes + minutes },
     lastEarnedAt: Date.now(),
+    streak,
+    lastFocusDay: today,
     recentRewards: [`+${gain} Breadcrumbs`, ...(minutes >= 60 ? ["+1 Hatching Credit", "Duck XP boost"] : []), ...s.recentRewards].slice(0, 5),
     outbox: [...s.outbox, { kind: "focus", duration_minutes: minutes, breadcrumbs_earned: gain, hatching_credits_earned: minutes >= 60 ? 1 : 0, screen_time_minutes_earned: minutes }],
     sync: { ...s.sync, pending: s.sync.pending + 1 },

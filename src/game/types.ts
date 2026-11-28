@@ -80,6 +80,7 @@ export type GameState = {
   blacklist: string[];
   lastEarnedAt: number;
   streak: number;
+  lastFocusDay: string | null;
   eggs: number;
   gear: Record<string, number>;
   claimedMilestones: number[];
