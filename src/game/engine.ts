@@ -13,6 +13,7 @@ export const starterState = (): GameState => ({
   claimedMilestones: [],
   recentRewards: ["Starter flock joined", "+420 Breadcrumbs ready"],
   outbox: [],
+  focusLog: [],
   sync: { pending: 0, status: "offline" },
   focusSession: null,
 });
@@ -63,6 +64,7 @@ export const rewardFocus = (s: GameState, minutes: number): GameState => {
     lastEarnedAt: Date.now(),
     recentRewards: [`+${gain} Breadcrumbs`, ...(minutes >= 60 ? ["+1 Hatching Credit", "Duck XP boost"] : []), ...s.recentRewards].slice(0, 5),
     outbox: [...s.outbox, { kind: "focus", duration_minutes: minutes, breadcrumbs_earned: gain, hatching_credits_earned: minutes >= 60 ? 1 : 0, screen_time_minutes_earned: minutes }],
+    focusLog: [...s.focusLog, { date: new Date().toISOString().slice(0, 10), minutes }].slice(-90),
     sync: { ...s.sync, pending: s.sync.pending + 1 },
   };
   if (active) next.ownedDucks = s.ownedDucks.map((o) => (o.id === active.id ? { ...o, xp: o.xp + (minutes >= 60 ? 50 : 10), level: levelFor({ ...o, xp: o.xp + (minutes >= 60 ? 50 : 10) }) } : o));
